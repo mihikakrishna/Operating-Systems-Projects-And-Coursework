@@ -41,12 +41,17 @@ int main( int argc, char *argv[] )  {
     int i = 0;
 
     while (ready_queue->count != 0 || io_queue->count != 0) {
-        printf("loop : %d\n", i++);
-        FCFS_ready(&curr_cpu_proc, &cpu_run, &io_run, ready_queue, io_queue, cpu, io, &ptr, &clock);
-        FCFS_io(&curr_io_proc, &cpu_run, &io_run, ready_queue, io_queue, cpu, io, &ptr);
+        printf("------------------- loop : %d ------------------\n", i++);
+        printf("\ncpu_run : %d          io_run : %d\n", cpu_run, io_run);
+        dispatch(&curr_cpu_proc, &cpu_run, &io_run, ready_queue, io_queue, cpu, io, &ptr, &clock);
+        run_cpu(&curr_cpu_proc, &cpu_run, &io_run, ready_queue, io_queue, cpu, io, &ptr, &clock);
+        run_io(&curr_io_proc, &cpu_run, &io_run, ready_queue, io_queue, cpu, io, &ptr);
         clock++;
     }
-
+    printf("------------------- COMPLETE ------------------\n");
+    displayResource(cpu);
+    displayResource(io);
+    
     
     return 0;
 }
