@@ -1,0 +1,80 @@
+
+typedef enum items = {glue , newspaper , model};
+
+builder(item i){
+    item my_item = i;
+    item missing_items [2];
+    int self_completed = 0;
+
+    while !(self_completed):
+        builder();
+
+    // find missing items
+    for i in items:
+        if builder.my_item != i: missing_items.append(i)
+
+    void builder(item missing_item){
+        // ask agent for missing items by blocking on item xcond
+        while monitor.needed(missing_item[0]) and monitor.needed(missing_item[1]):
+            // do nothing
+        //once missing items are unblocked and available, build
+        //set build_running to 1 to signal a build is in progress
+        monitor.build_running = 1;
+
+        //build
+
+        //set build_running back to 0 once build is finished
+        monitor.build_running = 0;
+        //increment completed to signal completion
+        monitor.completed += 1;
+        self_completed = 1;
+        //signal on item xcond to release items
+        monitor.take(missing_item[0]);
+        monitor.take(missing_item[1]);
+    }
+}
+
+
+agent{
+    // choose 2 items at random
+    item chosen_items[] 
+
+    //loop while a process is yet to be completed
+    while monitor.completed != 3:
+        agent();
+    
+    void generate_items(void){
+        chosen_items = random.choice(items,2);
+    }
+
+    void agent(void){
+            generate_items();
+            //Dequeue process blocked on chosen items by signalling on chosen items
+            monitor.take(chosen_items[0]);
+            monitor.take(chosen_items[1]);
+            while build_running:
+                //do nothing
+            //once build is finished, build_running = 0. Regenerate items
+    }
+}
+
+monitor{
+    //builders array initialized with one of each item
+    builder builders = [builder(item[0]), builder(item[1]), builder(item[2])];
+    int build_running = 0;
+    int completed = 0;
+
+    //condition variable array for each item the agent puts out
+    xcond items_arr= [item[0], item[1], item[2]];
+    entry void needed(item i){
+        items_arr[i].wait()
+    }
+    entry void take(item i){
+        items_arr[i].signal()
+    }
+}
+
+void main(void){
+    monitor monitor;
+    agent agent;
+} 
