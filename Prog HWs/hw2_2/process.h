@@ -12,6 +12,7 @@ typedef struct process {
     int doingIO;
 
     int order;
+    int blocksForIO;
     
 } PROC;
 
@@ -31,6 +32,7 @@ PROC* generateProcess(char *line, int order) {
 	process->blockedIO = 0;
     process->doingIO = 0;
     process->order = order;
+    process->blocksForIO = 0;
 
     return process;
 }

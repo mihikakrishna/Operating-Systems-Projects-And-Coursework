@@ -8,6 +8,12 @@
 #include "queue.h"
 #include "debug.h"
 
+
+int findmin(int a, int b){
+    if(a < b) return a;
+    return b;
+}
+
 int cmpfunc(const void *a, const void *b) {
   return (((PROC*)b)->order) - (((PROC*)a)->order);
 }
@@ -49,14 +55,21 @@ void dispatch(queue_t ready_q, queue_t io_q, int* cpu_running, PROC** cpu_procce
     float random_probability = (float)random() / (float)RAND_MAX; // Random Float [0,1]
     printf("\nrand num %f\n",random_probability );
     if (random_probability < curr_process->block_probability) {
+        curr_process->blocksForIO = 1;
         curr_process->switchTime = 
             (curr_process->runtime < 2) 
                 ? -1 
-                : (random() % (curr_process->runtime)) + 1; // Random Integer [1,runtime]
+                : (random() % (findmin(curr_process->runtime,5))) + 1; // Random Integer [1,runtime]
+        printf("The switch time was generated from [1,%d] and was determined to be %d.", (findmin(curr_process->runtime,5)), curr_process->switchTime);
         if (curr_process->runtime >= 2)
             printf("\nrand switch time: %d\n",curr_process->switchTime );
     } else {
-        curr_process->switchTime = -1;
+        curr_process->blocksForIO = 0;
+        if (curr_process->runtime > 5) {
+            curr_process->switchTime = 5;
+        } else {
+            curr_process->switchTime = -1;
+        }
     }
 
     END_DISPATCH:
@@ -66,7 +79,7 @@ void dispatch(queue_t ready_q, queue_t io_q, int* cpu_running, PROC** cpu_procce
 
 // When SwitchTime is up, then move process to IO Queue
 // When RunTime is up, move process to completed array
-void run_cpu(queue_t io_q, int* cpu_running, PROC* cpu_proccess, PROC** completed_processes, int* completed_processes_length, int clock_cycle, int* switching_to_io) {
+void run_cpu(queue_t io_q, queue_t ready_q, int* cpu_running, PROC* cpu_proccess, PROC** completed_processes, int* completed_processes_length, int clock_cycle, int* switching_to_io) {
     if (*cpu_running == 0) return;
 
     cpu_proccess->totalCPU += 1;
@@ -74,10 +87,15 @@ void run_cpu(queue_t io_q, int* cpu_running, PROC* cpu_proccess, PROC** complete
     cpu_proccess->switchTime -= 1;
 
     if (cpu_proccess->switchTime == 0) {
-        *switching_to_io = cpu_proccess->order;
-        cpu_proccess->io_time = -1;
-        queue_enqueue(io_q, cpu_proccess);
-        *cpu_running = 0;
+        if (cpu_proccess->blocksForIO) {
+            *switching_to_io = cpu_proccess->order;
+            cpu_proccess->io_time = -1;
+            queue_enqueue(io_q, cpu_proccess);
+            *cpu_running = 0;
+        } else {
+            queue_enqueue(ready_q, cpu_proccess);
+            *cpu_running = 0;
+        }
     } else if (cpu_proccess->runtime == 0) {
         cpu_proccess->completeTime = clock_cycle + 1;
         completed_processes[(*completed_processes_length)++] = cpu_proccess;
@@ -151,7 +169,7 @@ int main( int argc, char *argv[]) {
         print_cpu("CPU", cpu_running, cpu_proccess);
 
         dispatch(ready_q, io_q, &cpu_running, &cpu_proccess);
-        run_cpu(io_q, &cpu_running, cpu_proccess, completed_processes, &completed_processes_length, clock_cycle++, &switching_to_io);
+        run_cpu(io_q, ready_q, &cpu_running, cpu_proccess, completed_processes, &completed_processes_length, clock_cycle++, &switching_to_io);
         run_io(ready_q, io_q, &switching_to_io);
 
         printf("\n\n\n\n\n");
