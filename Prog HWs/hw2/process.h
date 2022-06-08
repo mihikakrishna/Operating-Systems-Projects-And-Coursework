@@ -8,6 +8,8 @@ typedef struct process {
     int givenCPU;
     int BlockedIO;
     int doingIO;
+    int switching_to_cpu;
+    int switching_to_io;
 } PROC;
 
 PROC* generateProcess(char *line) {
@@ -20,6 +22,8 @@ PROC* generateProcess(char *line) {
 	tmp->givenCPU = 0;
 	tmp->BlockedIO = 0;
     tmp->doingIO = 0;
+    tmp->switching_to_cpu = 0;
+    tmp->switching_to_io = 0;
     return tmp;
 }
 

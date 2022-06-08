@@ -1,0 +1,5 @@
+move onto cpu
+    generate radn num [0,1]
+        if less than bp, wil block
+        generate num [1,runtime]
+        run on cpu tull switch time expire, then move onto io q
