@@ -20,8 +20,8 @@ struct device* buildResource(char *name) {
 }
 
 void displayResource(struct device* dev) {
-    if(strcmp(dev->name, "CPU")) {
-        printf("%s:\n", dev->name);
+    if(strcmp(dev->name, "CPU")==0) {
+        printf("\n%s:\n", "CPU");
         double busy = (double) dev->busy;
         double idle = (double) dev->idle;
         double number = (double) dev->number;
@@ -29,18 +29,18 @@ void displayResource(struct device* dev) {
         printf("Total time spent idle: %d\n", dev->idle);
         printf("CPU utilization: %.2f\n", busy/(busy + idle));
         printf("Number of dispatches: %d\n", dev->number);
-        printf("Overall throughput: %.2f\n", number/(busy + idle));
+        printf("Overall throughput: %.2f\n",dev->throughput);
     }
-    else if(strcmp(dev->name, "IO")) {
-        printf("%s:\n", dev->name);
+    else if(strcmp(dev->name, "IO")==0) {
+        printf("\n%s:\n", "I/O device");
         double busy = (double) dev->busy;
         double idle = (double) dev->idle;
         double number = (double) dev->number;
         printf("Total time spent busy: %d\n", dev->busy);
         printf("Total time spent idle: %d\n", dev->idle);
-        printf("I/O device utilization: %.2f\n", busy/(busy + idle));
-        printf("Number of times I/O was started: %d\n", dev->number);
-        printf("Overall throughput: %.2f\n", number/(busy + idle));
+        printf("I/O utilization: %.2f\n", busy/(busy + idle));
+        printf("Number of dispatches: %d\n", dev->number);
+        printf("Overall throughput: %.2f\n", dev->throughput);
     }
     else {
         printf("Error Resource Type");
