@@ -292,7 +292,8 @@ int main( int argc, char *argv[]) {
     // Asserts on flag values to account for edge cases and off by one errors
     int CPUblock_assertion_value = completed_processes[0]->blocksforCPU;
     int CPUblock[3];
-    for (int i=0; i<3; i++) CPUblock[i] = (CPUblock_assertion_value>>i&1)&(!((CPUblock_assertion_value&1)&(CPUblock_assertion_value>>1&1)));
+    int assertion_blocks = (CPUblock_assertion_value&1)&(CPUblock_assertion_value>>1&1);
+    for (int i=0; i<3; i++) CPUblock[i] = (CPUblock_assertion_value>>i&1) & !assertion_blocks;
     for (unsigned i=0; i<completed_processes_length; i++) {
         if (i) {
             completed_processes[i]->completeTime -= CPUblock[2]*(i==1);
